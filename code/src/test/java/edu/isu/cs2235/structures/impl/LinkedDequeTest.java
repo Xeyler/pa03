@@ -31,7 +31,7 @@ public class LinkedDequeTest {
 
     @Before
     public void setUp() {
-        fixture = new LinkedDeque<>();
+        fixture = new LinkedDeque
     }
 
     @After

@@ -2,6 +2,8 @@ package edu.isu.cs2235;
 
 import edu.isu.cs2235.structures.Queue;
 import edu.isu.cs2235.structures.impl.LinkedQueue;
+
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -16,7 +18,9 @@ public class Simulation {
     private int maxNumQueues;
     private Random r;
     private int numIterations = 50;
-    // You will probably need more fields
+    private Queue<Integer>[] queues;
+    private int[] numberOfPeopleThroughQueue;
+    private int[] totalMinutesWaited;
 
     /**
      * Constructs a new simulation with the given arrival rate and maximum number of queues. The Random
@@ -29,11 +33,13 @@ public class Simulation {
         this.arrivalRate = arrivalRate;
 
         this.maxNumQueues = maxNumQueues;
+        numberOfPeopleThroughQueue = new int[maxNumQueues];
+        totalMinutesWaited = new int[maxNumQueues];
         r = new Random();
     }
 
     /**
-     * Constructs a new siulation with the given arrival rate and maximum number of queues. The Random
+     * Constructs a new simulation with the given arrival rate and maximum number of queues. The Random
      * number generator is seeded with the provided seed value, and the number of iterations is set to
      * the provided value.
      *
@@ -52,7 +58,60 @@ public class Simulation {
      * Executes the Simulation
      */
     public void runSimulation() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        System.out.println("Arrival rate: " + arrivalRate);
+        for(int numberOfQueues = 1; numberOfQueues <= maxNumQueues; numberOfQueues++) {
+            totalMinutesWaited = new int[numberOfQueues];
+            numberOfPeopleThroughQueue = new int[numberOfQueues];
+
+            for(int iteration = 0; iteration < numIterations; iteration++) {
+                queues = new Queue[numberOfQueues];
+                Arrays.fill(queues, new LinkedQueue<Integer>());
+
+                int minutes = 0;
+
+                while (minutes < 720) {
+                    int numPeopleThisMinute = getRandomNumPeople(arrivalRate);
+
+                    for (int i = 0; i < numPeopleThisMinute; i++) {
+                        getSmallestQueue(queues).offer(minutes);
+                    }
+
+                    for (int i = 0; i < numberOfQueues; i++) {
+                        if (!queues[i].isEmpty()) {
+                            totalMinutesWaited[i] += minutes - queues[i].poll();
+                            numberOfPeopleThroughQueue[i] += 1;
+                        }
+                        if (!queues[i].isEmpty()) {
+                            totalMinutesWaited[i] += minutes - queues[i].poll();
+                            numberOfPeopleThroughQueue[i] += 1;
+                        }
+                    }
+
+                    minutes++;
+                }
+            }
+
+            double averageTimeWaited = 0;
+            for(int i = 0; i < numberOfQueues; i++) {
+                averageTimeWaited += totalMinutesWaited[i] != 0 ? (double) totalMinutesWaited[i] / numberOfPeopleThroughQueue[i] : 0;
+            }
+            averageTimeWaited /= numberOfQueues;
+
+            System.out.println("Average time waited using " + numberOfQueues + " queue(s): " + (int) Math.ceil(averageTimeWaited));
+        }
+    }
+
+    private Queue getSmallestQueue(Queue[] queues) {
+        if(queues == null)
+            return null;
+        Queue smallestQueue = queues[0];
+
+        for(Queue queue : queues) {
+            if(queue.size() < smallestQueue.size())
+                smallestQueue = queue;
+        }
+
+        return smallestQueue;
     }
 
     /**
